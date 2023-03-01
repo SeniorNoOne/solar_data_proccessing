@@ -133,3 +133,5 @@ dmypy.json
 
 # test data
 *.txt
+*.csv
+*.pkl

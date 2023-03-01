@@ -1,6 +1,6 @@
 numpy
 matplotlib
-flake8
+tabulate
 
 # flake8
 flake8

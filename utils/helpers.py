@@ -2,7 +2,7 @@ import warnings
 
 
 def set_custom_warning_format(msg):
-    msg = "Custom Warning: " + msg
+    msg = "Warning: " + msg
 
     def custom_formatwarning(*args, **kwargs):
         return str(msg) + '\n'
@@ -15,4 +15,5 @@ def issue_custom_warning(msg):
     warnings.warn(msg, category=UserWarning)
 
 
-issue_custom_warning("This is a custom warning message.")
+if __name__ == "__main__":
+    issue_custom_warning("This is a custom warning message.")

@@ -4,8 +4,10 @@
 
 import csv
 from datetime import datetime
-from typing import Union, List, Tuple, Dict
-
+from tabulate import tabulate
+from typing import Union, Any, List, Tuple, Dict
+from utils.config import DT_FORMAT, INP_DIR
+from utils.helpers import issue_custom_warning
 
 # global cache variable to prevent reprocessing big files
 OPENED_FILES = {}
@@ -107,6 +109,7 @@ def get_data_from_file(filename: str, sep: str = ",", header: bool = False,
                        dt_format: str = "",
                        use_next: bool = True) -> Dict[str, List[Union[int, float, datetime]]]:
     if filename in OPENED_FILES:
+        issue_custom_warning("Reading file from cache")
         return OPENED_FILES[filename]
     else:
         # reading raw data from file
@@ -124,6 +127,50 @@ def get_data_from_file(filename: str, sep: str = ",", header: bool = False,
         return data
 
 
+def filter_data(data: Dict[str, List[Union[int, float, datetime]]],
+                min_values: Dict[str, Union[int, float, datetime]],
+                max_values: Dict[str, Union[int, float, datetime]]) -> \
+        Dict[str, List[Union[int, float, datetime]]]:
+    # validating types
+    for col_name, col_values in data.items():
+        if col_name in min_values and not isinstance(min_values[col_name], type(col_values[0])):
+            raise TypeError(f"Invalid type for {col_name} in min_values")
+        if col_name in max_values and not isinstance(max_values[col_name], type(col_values[0])):
+            raise TypeError(f"Invalid type for {col_name} in max_values")
+
+    # checking in min_values and max_values have same length
+    if set(min_values.keys()) != set(max_values.keys()):
+        raise ValueError("min_values and max_values should have the same keys")
+
+    # using dictionary comprehension to create filtered_data
+    filtered_data = {col: [] for col in data}
+    for col_name in min_values:
+        min_val = min_values[col_name]
+        max_val = max_values[col_name]
+        for index, val in enumerate(data[col_name]):
+            if min_val <= val <= max_val:
+                for col_name_ in data:
+                    filtered_data[col_name_].append(data[col_name_][index])
+    return filtered_data
+
+
+def show_data(data_to_show: Dict[str, List[Union[int, float, datetime, str]]],
+               tablefmt: str = "simple_outline") -> None:
+    table = tabulate(data_to_show, tablefmt=tablefmt, headers="keys", showindex="always")
+    print(table)
+
+
 if __name__ == "__main__":
-    data = get_data_from_file(r"C:\Users\Martyniuk Vadym\Desktop\text_data1.txt",
-                              dt_format="%Y-%m-%d %H:%M:%S")
+    # reading and processing data
+    inp_data = get_data_from_file(r"C:\Users\Martyniuk Vadym\Desktop\text_data1.txt",
+                                  dt_format=DT_FORMAT)
+    show_data(inp_data)
+
+    # filtering data
+    inp_data = filter_data(inp_data,
+                           min_values={"0": datetime.strptime("2019-05-06 10:48:00", DT_FORMAT)},
+                           max_values={"0": datetime.strptime("2019-05-06 10:52:00", DT_FORMAT)})
+    show_data(inp_data)
+
+    # inp_data = get_data_from_file(r"C:\Users\Martyniuk Vadym\Desktop\solar_data_proccessing-\data\Photovoltaic array A measurements.csv",
+    #                               dt_format=DT_FORMAT, header=True)
