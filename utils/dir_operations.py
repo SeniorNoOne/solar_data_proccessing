@@ -1,7 +1,7 @@
 import os
 
 
-def check_io(inp_dir, outp_dir, inp_file_ext):
+def check_io(inp_dir: str, outp_dir: str, inp_file_ext: str) -> None:
     # Get absolute paths for input and output directories
     inp_dir = os.path.abspath(inp_dir)
     outp_dir = os.path.abspath(outp_dir)
@@ -14,7 +14,8 @@ def check_io(inp_dir, outp_dir, inp_file_ext):
     if not os.path.isdir(inp_dir):
         raise FileNotFoundError(f"Input directory '{inp_dir}' does not exist")
     if not any(fname.endswith(inp_file_ext) for fname in os.listdir(inp_dir)):
-        raise FileNotFoundError(f"No files with {inp_file_ext} extension in input directory '{inp_dir}'")
+        raise FileNotFoundError(f"No files with {inp_file_ext} extension in "
+                                f"input directory '{inp_dir}'")
 
     # Check if output directory exists and is empty
     if os.path.isdir(outp_dir):
